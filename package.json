@@ -17,6 +17,7 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/Wadjetz/screenshots-service#readme",
   "dependencies": {
+    "connect-timeout": "^1.7.0",
     "express": "^4.13.3",
     "imagemagick-stream": "^3.0.0",
     "stream-browserify": "^2.0.1",
