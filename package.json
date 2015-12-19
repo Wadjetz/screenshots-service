@@ -1,0 +1,25 @@
+{
+  "name": "screenshots-service",
+  "version": "0.0.1",
+  "description": "web site screenshots service",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/Wadjetz/screenshots-service.git"
+  },
+  "keywords": [
+    "screenshots"
+  ],
+  "author": "Wadjetz",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/Wadjetz/screenshots-service#readme",
+  "dependencies": {
+    "express": "^4.13.3",
+    "imagemagick-stream": "^3.0.0",
+    "stream-browserify": "^2.0.1",
+    "webshot": "^0.16.0"
+  }
+}
