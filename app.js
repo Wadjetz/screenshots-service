@@ -15,43 +15,55 @@ function fileName(url, resize, options) {
   return name + "." + options.streamType;
 }
 
+function cache(req, res, next) {
+  const filePath = req._filePath;
+  fs.stat(filePath, function(err, stat) {
+    console.log(stat);
+    if (err) next();
+    else res.sendFile(filePath);
+  });
+}
+
+function validator(req, res, next) {
+  const url = req.query.url;
+  const resize = req.query.resize;
+  if (url && resize) {
+    req._url = url;
+    req._resize = resize;
+    req._filePath = __dirname + "/screens/" + fileName(url, resize, options);
+    next();
+  } else {
+    console.error("url or resize missing", url, resize);
+    res.status(400).end("url or resize missing");
+  }
+}
+
 module.exports = function (cluster) {
-  app.get("/", function (req, res) {
-    const url = req.query.url;
-    const resize = req.query.resize;
-    const filePath = __dirname + "/screens/" + fileName(url, resize, options);
-    if (url && resize) {
-      fs.stat(filePath, function(err) {
-        if (err) {
-          const file = fs.createWriteStream(filePath, { encoding: "binary" });
-          webshot(url, options)
-            .pipe(im().resize(resize).quality(99))
-            .on("data", function(data) {
-              file.write(data.toString("binary"), "binary");
-              res.write(data);
-            })
-            .on("error", function (webshotError) {
-              fs.unlink(filePath, function (rmError) {
-                if (rmError) {
-                  console.error(filePath, "rmError", rmError, "webshotError", webshotError);
-                  res.status(500);
-                } else {
-                  console.error(filePath, "error", webshotError);
-                  res.status(500);
-                }
-              });
-            })
-            .on("end", function() {
-              res.end();
-            });
-        } else {
-          res.sendFile(filePath);
-        }
+  app.get("/", validator, cache, function (req, res) {
+    const url = req._url;
+    const resize = req._resize;
+    const filePath = req._filePath;
+    const file = fs.createWriteStream(filePath, { encoding: "binary" });
+    webshot(url, options)
+      .pipe(im().resize(resize).quality(99))
+      .on("data", function(data) {
+        file.write(data.toString("binary"), "binary");
+        res.write(data);
+      })
+      .on("error", function (webshotError) {
+        fs.unlink(filePath, function (rmError) {
+          if (rmError) {
+            console.error(filePath, "rmError", rmError, "webshotError", webshotError);
+            res.status(500);
+          } else {
+            console.error(filePath, "error", webshotError);
+            res.status(500);
+          }
+        });
+      })
+      .on("end", function() {
+        res.end();
       });
-    } else {
-      console.error("url or resize missing", url, resize);
-      res.status(400).end("url or resize missing");
-    }
   });
 
   var server = app.listen(PORT, () => {
