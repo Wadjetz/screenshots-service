@@ -18,15 +18,23 @@ function fileName(url, resize, options) {
 function cache(req, res, next) {
   const filePath = req._filePath;
   fs.stat(filePath, function(err, stat) {
-    console.log(stat);
-    if (err) next();
-    else res.sendFile(filePath);
+    if (err) {
+      next();
+    } else {
+      if (stat.size === 0) {
+        console.log("cached file empty " + filePath);
+        next();
+      } else {
+        res.sendFile(filePath);
+      }
+    }
   });
 }
 
 function validator(req, res, next) {
   const url = req.query.url;
   const resize = req.query.resize;
+  // TODO limit resize to 1000x1000
   if (url && resize) {
     req._url = url;
     req._resize = resize;
