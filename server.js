@@ -1,33 +1,33 @@
-const express = require('express');
-const webshot = require('webshot');
-const im = require('imagemagick-stream');
-const fs = require('fs');
+const express = require("express");
+const webshot = require("webshot");
+const im = require("imagemagick-stream");
+const fs = require("fs");
 const app  = express();
-const http = require('http').Server(app);
+const http = require("http").Server(app);
 const PORT = 9100;
 
-const option = {
+const options = {
   streamType: "jpeg"
 };
 
-function fileName(url, resize, option) {
+function fileName(url, resize, options) {
   var name = (url + resize).replace(new RegExp(`[",/;\[\*\.\:\|\=\?\%]`, "g"), "_").replace("\\", "_").replace("\]", "_");
-  return name + "." + option.streamType;
+  return name + "." + options.streamType;
 }
 
-app.get('/', function (req, res) {
+app.get("/", function (req, res) {
   const url = req.query.url;
   const resize = req.query.resize;
-  const filePath = __dirname + "/screens/" + fileName(url, resize, option);
+  const filePath = __dirname + "/screens/" + fileName(url, resize, options);
   if (url && resize) {
-    fs.stat(filePath, function(err, f) {
+    fs.stat(filePath, function(err) {
       if (err) {
         console.log("webshot", filePath);
         const file = fs.createWriteStream(filePath, { encoding: "binary" });
-        webshot(url, option)
-          .pipe(im().resize(resize).quality(90))
-          .on('data', function(data) {
-            file.write(data.toString('binary'), 'binary');
+        webshot(url, options)
+          .pipe(im().resize(resize).quality(99))
+          .on("data", function(data) {
+            file.write(data.toString("binary"), "binary");
             res.write(data);
           })
           .on("error", function (webshotError) {
@@ -41,7 +41,7 @@ app.get('/', function (req, res) {
               }
             });
           })
-          .on('end', function() {
+          .on("end", function() {
             res.end();
           });
       } else {
@@ -51,10 +51,10 @@ app.get('/', function (req, res) {
     });
   } else {
     console.log("url or resize missing", url, resize);
-    res.end("url or resize missing");
+    res.status(400).end("url or resize missing");
   }
 });
 
 http.listen(PORT, function(){
-  console.log('listening on ' + PORT);
+  console.log("listening on " + PORT);
 });
