@@ -82,34 +82,23 @@ function defaultImageCache (req, res, next) {
 function screensShot (url, resize, filePath, options) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(filePath, { encoding: "binary" });
+    const errorHandler = function (webshotError) {
+      fs.unlink(filePath, function (rmError) {
+        if (rmError) {
+          reject({
+            filePath: filePath,
+            webshotError: webshotError,
+            rmError: rmError
+          });
+        } else {
+          reject({ filePath: filePath, webshotError: webshotError });
+        }
+      });
+    };
     webshot(url, options)
-      .on("error",  (webshotError) => {
-        fs.unlink(filePath, function (rmError) {
-          if (rmError) {
-            reject({
-              filePath: filePath,
-              webshotError: webshotError,
-              rmError: rmError
-            });
-          } else {
-            reject({ filePath: filePath, webshotError: webshotError });
-          }
-        });
-      })
+      .on("error", errorHandler)
       .pipe(im().resize(resize).quality(99))
-      .on("error", function (webshotError) {
-        fs.unlink(filePath, function (rmError) {
-          if (rmError) {
-            reject({
-              filePath: filePath,
-              webshotError: webshotError,
-              rmError: rmError
-            });
-          } else {
-            reject({ filePath: filePath, webshotError: webshotError });
-          }
-        });
-      })
+      .on("error", errorHandler)
       .on("data", function (data) {
         file.write(data.toString("binary"), "binary");
       })
