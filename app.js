@@ -3,13 +3,15 @@ const webshot = require("webshot");
 const im = require("imagemagick-stream");
 const timeout = require("connect-timeout");
 const fs = require("fs");
+const conf = require("./config");
 const app  = express();
-const PORT = 9100;
+
+const PORT = conf.get("APP_PORT");
 
 const options = {
   streamType: "jpeg",
   defaultWhiteBackground: true,
-  timeout: 29000
+  timeout: conf.get("TIMEOUT")
 };
 
 function fileName(url, resize, options) {
