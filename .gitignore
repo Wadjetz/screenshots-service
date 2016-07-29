@@ -1,3 +1,7 @@
+# App
+dist
+typings
+
 # Logs
 logs
 *.log

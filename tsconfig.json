@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": false,
+        "outDir": "dist",
+        "allowJs": true
+    },
+    "files": [
+        "src/main.ts",
+        "typings/index.d.ts"
+    ],
+    "exclude": [
+      "node_modules",
+      "dist",
+      "typings/**"
+    ]
+}
