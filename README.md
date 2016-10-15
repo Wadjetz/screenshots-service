@@ -14,5 +14,5 @@ node server.js
 ## Usage
 
 ```html
-<img src="http://localhost:9100/?resize=500x500&url=https://github.com" />
+<img src="http://localhost:9100/?resize=500&url=https://github.com" />
 ```

@@ -7,6 +7,7 @@ import * as timeout from "connect-timeout";
 import * as sharp from "sharp";
 import * as fs from "fs";
 import * as nconf from "nconf";
+import { fileName } from "./utils";
 
 const conf = nconf.argv().env().file({
   file: "config.json"
@@ -15,8 +16,13 @@ const conf = nconf.argv().env().file({
 const app = express();
 app.use(timeout("30s"));
 
+interface RequestWithParam extends express.Request {
+  _options: any
+}
+
 const APP_PORT = conf.get("APP_PORT");
-app.get("/", (req, res) => {
+app.get("/", validator, (req: RequestWithParam, res) => {
+  console.log(req._options);
   const url = req.query.url;
   const file = fs.createWriteStream("test.jpeg" , { encoding: "binary" });
 
@@ -26,13 +32,11 @@ app.get("/", (req, res) => {
     timeout: conf.get("TIMEOUT")
   }
 
-  const transformer = sharp().resize(400)
-
   webshot("google.com", options)
     .on("error", err => {
       console.error(err);
     })
-    .pipe(transformer)
+    .pipe(sharp().resize(400))
     .on("error", err => {
       console.error(err);
     })
@@ -50,7 +54,12 @@ const server = app.listen(APP_PORT, () => {
   console.log(`App listening at http://${host}:${port}`);
 });
 
-function fileName(url: string, resize: string, options: any) {
-  let name = (url + resize).replace(new RegExp(`[",/;\[\*\.\:\|\=\?\%]`, "g"), "_").replace("\\", "_").replace("\]", "_");
-  return name + ".jpeg";
+function validator(req, res, next) {
+  req._options = {
+    "url": req.query.url,
+    "resize": parseInt(req.query.resize)
+  }
+  next();
 }
+
+
